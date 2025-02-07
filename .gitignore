@@ -1,0 +1,8 @@
+auto-save-list/
+elpaca/
+eshell/
+org-persist/
+*.org~
+recentf
+sessions
+*.eld
