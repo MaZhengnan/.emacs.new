@@ -3,6 +3,7 @@ elpaca/
 eshell/
 org-persist/
 *.org~
+config.el
 recentf
 sessions
 *.eld

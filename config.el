@@ -631,7 +631,7 @@
   :config
   (setq neo-smart-open t
         neo-show-hidden-files t
-        neo-window-width 55
+        neo-window-width 35 
         neo-window-fixed-size nil
         inhibit-compacting-font-caches t
         projectile-switch-project-action 'neotree-projectile-action) 
