@@ -7,3 +7,4 @@ config.el
 recentf
 sessions
 *.eld
+.lsp-session-v1

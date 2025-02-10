@@ -65,22 +65,6 @@
 
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 
-(use-package company
-  :defer 2
-  :diminish
-  :custom
-  (company-begin-commands '(self-insert-command))
-  (company-idle-delay .1)
-  (company-minimum-prefix-length 2)
-  (company-show-numbers t)
-  (company-tooltip-align-annotations 't)
-  (global-company-mode t))
-
-(use-package company-box
-  :after company
-  :diminish
-  :hook (company-mode . company-box-mode))
-
 (use-package dashboard
   :ensure t 
   :init
@@ -94,9 +78,14 @@
   (setq dashboard-center-content t ;; set to 't' for centered content
         dashboard-vertically-center-content t)
   (setq dashboard-items '((recents . 5)
+                          (projects . 5)
                           (agenda . 5 )
-                          (bookmarks . 3)
-                          (projects . 3)))
+                          (bookmarks . 3)))
+(setq dashboard-heading-shorcut-format " [%s]")
+(setq dashboard-item-shortcuts '((recents   . "r")
+                                 (projects  . "p")
+                                 (agenda    . "a")
+                                 (bookmarks . "m")))
  (setq dashboard-icon-type 'all-the-icons)  ; use `all-the-icons' package
  (setq dashboard-projects-backend 'projectile)
   :custom 
@@ -104,6 +93,14 @@
 				      (bookmarks . "book")))
   :config
   (dashboard-setup-startup-hook))
+
+;; 设置 Cantarell 字体
+(defun mzn/dashboard-font-setup ()
+  (with-current-buffer "*mzn/emacs*"
+    (setq buffer-face-mode-face '(:family "Fira Code Light" :height 100 :weight Light))
+    (buffer-face-mode)))
+
+(add-hook 'dashboard-mode-hook 'mzn/dashboard-font-setup)
 
 (use-package diminish)
 
@@ -350,6 +347,15 @@
     "b S" '(save-some-buffers :wk "Save multiple buffers")
     "b w" '(bookmark-save :wk "Save current bookmarks to bookmark file"))
 
+   (dt/leader-keys
+    "c" '(:ignore t :wk "Code")
+    "c b" '(my-cmake-build :wk "Build Project")
+    "c c" '(my-cmake-setup :wk "CMake Configure (For C/Cpp)")
+    "c d" '(my-cmake-debug :wk "Debug")
+    "c f" '(lsp-format-buffer :wk "Format code")
+    "c r" '(my-cmake-run :wk "Run Executable")
+    "c s" '(my-select-compiler :wk "Select Compiler"))
+ 
   (dt/leader-keys
     "d" '(:ignore t :wk "Dired")
     "d d" '(dired :wk "Open dired")
@@ -611,10 +617,151 @@
   :ensure t
   :init (ivy-rich-mode 1)) ;; this gets us descriptions in M-x.
 
-(use-package dart-mode)
-(use-package haskell-mode)
-(use-package lua-mode)
-(use-package php-mode)
+;;----------------- C/Cpp Mode -------------------------------;;
+;; 配置 corfu 作为轻量化补全框架
+(use-package corfu
+  :ensure t
+  :custom
+  (corfu-cycle t)                ;; 循环选择补全项
+  (corfu-auto t)                 ;; 自动弹出补全菜单
+  (corfu-auto-delay 0.05)        ;; 自动补全延迟
+  (corfu-auto-prefix 1)          ;; 自动补全触发的字符数
+  :init
+  (global-corfu-mode)            ;; 全局启用 corfu
+  :config
+  ;; 导航补全菜单的按键绑定
+  (define-key corfu-map (kbd "TAB") 'corfu-next)
+  (define-key corfu-map (kbd "<tab>") 'corfu-next)
+  (define-key corfu-map (kbd "S-TAB") 'corfu-previous)
+  (define-key corfu-map (kbd "<backtab>") 'corfu-previous))
+
+;; 使用 orderless 提供更强大的模糊匹配
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic)) ;; 使用模糊匹配
+  (completion-category-overrides '((file (styles . (partial-completion)))))) ;; 文件路径补全更友好
+
+;; 禁用 org-mode 和 eshell-mode 的补全
+(add-hook 'org-mode-hook (lambda () (corfu-mode -1)))
+(add-hook 'eshell-mode-hook (lambda () (corfu-mode -1)))
+
+;; 配置 lsp-mode
+(use-package lsp-mode
+  :ensure t
+  :commands (lsp lsp-deferred)
+  :hook ((c-mode . lsp-deferred)
+         (c++-mode . lsp-deferred)
+         (python-mode . lsp-deferred)
+         (cmake-mode . lsp-deferred))
+  :config
+  (setq lsp-clients-clangd-args '("--header-insertion=never" "--clang-tidy" "--completion-style=detailed")
+        lsp-enable-symbol-highlighting t
+        lsp-enable-on-type-formatting t
+        lsp-idle-delay 0.1
+        lsp-diagnostics-provider :flycheck)
+ (setq lsp-file-watch-ignored-directories '("[/\\\\]\\.git\\'" "[/\\\\]\\.hg\\'" "[/\\\\]\\.bzr\\'" "[/\\\\]_darcs\\'" "[/\\\\]\\.svn\\'" "[/\\\\]\\.idea\\'" "[/\\\\]\\.ensime_cache\\'" "[/\\\\]\\.eunit\\'" "[/\\\\]node_modules\\'" "[/\\\\]\\.fslckout\\'" "[/\\\\]\\.tox\\'" "[/\\\\]\\.stack-work\\'" "[/\\\\]\\.bloop\\'" "[/\\\\]\\.metals\\'" "[/\\\\]target\\'" "[/\\\\]\\.ccls-cache\\'")))
+
+;; 配置 lsp-ui
+(use-package lsp-ui
+  :ensure t
+  :hook (lsp-mode . lsp-ui-mode)
+  :commands lsp-ui-mode
+  :config
+  (setq lsp-ui-doc-enable t
+        lsp-ui-doc-position 'at-point
+        lsp-ui-doc-show-with-cursor t
+        lsp-ui-sideline-enable t
+        lsp-ui-sideline-show-hover t))
+
+;; 安装和配置 cmake-mode
+(use-package cmake-mode
+  :ensure t
+  :mode ("CMakeLists\\.txt\\'" . cmake-mode)
+  :mode ("\\.cmake\\'" . cmake-mode)
+  :hook (cmake-mode . lsp-deferred)
+  :config
+  (setq cmake-tab-width 4))
+
+;; general varible
+(defvar my-cmake-build-dir "build"
+  "The default build directory for CMake projects.")
+
+(defvar my-cmake-compiler-list
+  (if (eq system-type 'darwin)
+      '("clang" "clang++")
+    '("gcc" "g++" "clang" "clang++"))
+  "A list of available compilers to choose from, adjusted for the system.")
+
+;; general function
+(defun my-locate-project-root ()
+  "Locate the project root containing 'CMakeLists.txt'."
+  (locate-dominating-file default-directory "CMakeLists.txt"))
+
+(defun my-select-compiler ()
+  "Select a compiler from `my-cmake-compiler-list`."
+  (interactive)
+  (let ((compiler (completing-read "Select Compiler: " my-cmake-compiler-list)))
+    (setenv "CC" compiler)   ;; 设置 C 编译器
+    (setenv "CXX" compiler) ;; 设置 C++ 编译器
+    (message "Compiler set to: %s" compiler)))
+
+(defun my-find-executables (build-dir)
+  "Find executable files in BUILD-DIR."
+  (let ((files (directory-files build-dir t "^[^\\.].*")))
+    (seq-filter
+     (lambda (file)
+       (and (file-executable-p file) ;; 可执行文件
+            (not (file-directory-p file)))) ;; 排除目录
+     files)))
+
+;; CMake 命令
+(defun my-cmake-setup ()
+  "Run CMake to configure the project."
+  (interactive)
+  (let ((project-root (my-locate-project-root)))
+    (if project-root
+        (let ((default-directory project-root))
+          (compile (format "cmake -B %s -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON" my-cmake-build-dir)))
+      (message "No CMakeLists.txt found in the project!"))))
+
+(defun my-cmake-build ()
+  "Build the CMake project."
+  (interactive)
+  (let ((project-root (my-locate-project-root)))
+    (if project-root
+        (let ((default-directory project-root))
+          (compile (format "cmake --build %s" my-cmake-build-dir)))
+      (message "No CMakeLists.txt found in the project!"))))
+(defun my-cmake-run ()
+  "Run the compiled CMake project."
+  (interactive)
+  (let* ((project-root (my-locate-project-root))
+         (build-dir (concat project-root my-cmake-build-dir))
+         (executables (my-find-executables build-dir)))
+    (if (and project-root executables)
+        (let ((default-directory build-dir)
+              (exe (completing-read "Select executable: " executables)))
+          (if (eq system-type 'windows-nt)
+              (compile (format "%s" (file-name-nondirectory exe))) ;; Windows 不需要 ./ 前缀
+            (compile (format "./%s" (file-name-nondirectory exe))))) ;; Unix 使用 ./ 前缀
+      (message "No executable found in the build directory!"))))
+
+(defun my-cmake-debug ()
+  "Debug the CMake project."
+  (interactive)
+  (let* ((project-root (my-locate-project-root))
+         (build-dir (concat project-root my-cmake-build-dir))
+         (executables (my-find-executables build-dir)))
+    (if (and project-root executables)
+        (let ((default-directory build-dir)
+              (exe (completing-read "Select executable to debug: " executables)))
+          (if (eq system-type 'windows-nt)
+              (gdb (format "gdb -i=mi %s" (file-name-nondirectory exe))) ;; Windows 不需要 ./ 前缀
+            (gdb (format "gdb -i=mi ./ %s" (file-name-nondirectory exe))))) ;; Unix 使用 ./ 前缀
+      (message "No executable found in the build directory!"))))
+
+;; CC Mode 配置
 
 (global-set-key [escape] 'keyboard-escape-quit)
 
@@ -652,22 +799,23 @@
 
 (eval-after-load 'org-indent '(diminish 'org-indent-mode))
 
-;;(custom-set-faces
-  ;; '(org-level-1 ((t (:inherit outline-1 :height 1.0))))
-  ;; '(org-level-2 ((t (:inherit outline-2 :height 1.0))))
-  ;; '(org-level-3 ((t (:inherit outline-3 :height 1.0))))
-  ;; '(org-level-4 ((t (:inherit outline-4 :height 1.0))))
-  ;; '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
-  ;; '(org-level-6 ((t (:inherit outline-5 :height 1.0))))
-  ;; '(org-level-7 ((t (:inherit outline-5 :height 1.0)))))
-(with-eval-after-load 'org
-  ;; 设置 Org Mode 正文字体
-  (set-face-attribute 'org-document-title nil :font "Cantarell" :weight 'bold :height 180)
-  (set-face-attribute 'org-document-info nil :font "Cantarell" :weight 'bold :height 140)
-  (set-face-attribute 'org-level-1 nil :font "Cantarell" :weight 'bold :height 160)
-  (set-face-attribute 'org-level-2 nil :font "Cantarell" :weight 'bold :height 150)
-  (set-face-attribute 'org-level-3 nil :font "Cantarell" :weight 'bold :height 140)
-  (set-face-attribute 'org-level-4 nil :font "Cantarell" :weight 'bold :height 130))
+;; 设置 Org-mode 标题的字体
+(defun my-org-mode-setup ()
+  (set-face-attribute 'org-level-1 nil :font "Cantarell" :weight 'regular :height 1.5)
+  (set-face-attribute 'org-level-2 nil :font "Cantarell" :weight 'regular :height 1.4)
+  (set-face-attribute 'org-level-3 nil :font "Cantarell" :weight 'regular :height 1.3)
+  (set-face-attribute 'org-level-4 nil :font "Cantarell" :weight 'regular :height 1.2)
+  (set-face-attribute 'org-level-5 nil :font "Cantarell" :weight 'regular :height 1.1)
+  (set-face-attribute 'org-level-6 nil :font "Cantarell" :weight 'regular :height 1.1)
+  (set-face-attribute 'org-level-7 nil :font "Cantarell" :weight 'regular :height 1.1))
+
+(add-hook 'org-mode-hook 'my-org-mode-setup)
+;; 确保图标的大小不变
+(setq org-startup-indented t)
+(setq org-indent-indentation-per-level 2)
+
+;; 使用 `variable-pitch-mode` 来解决图标大小的问题
+(add-hook 'org-mode-hook 'variable-pitch-mode)
 
 (require 'org-tempo)
 
@@ -764,7 +912,9 @@
 
 (use-package tldr)
 
-(add-to-list 'default-frame-alist '(alpha-background . 100)) ; For all new frames henceforth
+(add-to-list 'default-frame-alist '(alpha-background . 80)) ; For all new frames henceforth
+
+(use-package transient)
 
 (use-package which-key
   :init
