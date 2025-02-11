@@ -20,7 +20,7 @@
 (defvar mzn/windows-notes-path nil)
 (defvar mzn/windows-agenda-path nil)
 (defvar mzn/windows-code-path nil)
-(defvar mzn/windows-font-size 140) ;; Ensure this variable is defined
+(defvar mzn/windows-font-size 120) ;; Ensure this variable is defined
 
 ;; Get environment variables and assign values
 (let ((my-custom-path (getenv "MZN_WORK")))
@@ -94,13 +94,12 @@
   :config
   (dashboard-setup-startup-hook))
 
-;; 设置 Cantarell 字体
 (defun mzn/dashboard-font-setup ()
   (with-current-buffer "*mzn/emacs*"
-    (setq buffer-face-mode-face '(:family "Fira Code Light" :height 100 :weight Light))
+    (setq buffer-face-mode-face '(:family "Fira Code" :height 100 :weight 'light))
     (buffer-face-mode)))
 
-(add-hook 'dashboard-mode-hook 'mzn/dashboard-font-setup)
+(add-hook 'dashboard-mode-hook #'mzn/dashboard-font-setup)
 
 (use-package diminish)
 
@@ -267,29 +266,29 @@
   :init (global-flycheck-mode))
 
 (set-face-attribute 'default nil
-  :font "Fira Code Light"
+  :family "Fira Code"
   :height default-font-size
-  :weight 'regular)
+  :weight 'light)
 (set-face-attribute 'variable-pitch nil
-  :font "Fira Code Light"
+  :family "Cantarell"
   :height default-font-size
   :weight 'regular)
 (set-face-attribute 'fixed-pitch nil
-  :font "Cantarell"
+  :family "Fira Sans"
   :height default-font-size
-  :weight 'regular)
+  :weight 'light)
 ;; Makes commented text and keywords italics.
 ;; This is working in emacsclient but not emacs.
 ;; Your font must have an italic face available.
-(set-face-attribute 'font-lock-comment-face nil
-  :slant 'italic)
-(set-face-attribute 'font-lock-keyword-face nil
-  :slant 'italic)
+;;(set-face-attribute 'font-lock-comment-face nil
+  ;;:slant 'italic)
+;;(set-face-attribute 'font-lock-keyword-face nil
+  ;;:slant 'italic)
 
 ;; This sets the default font on all graphical frames created after restarting Emacs.
 ;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
 ;; are not right unless I also add this method of setting the default font.
-;;(add-to-list 'default-frame-alist '(font . "JetBrains Mono-11"))
+(add-to-list 'default-frame-alist '(font . "Fira Code"))
 
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.12)
@@ -801,32 +800,18 @@
 
 ;; 设置 Org-mode 标题的字体
 ;; 设置 Org-mode 全局字体为 Cantarell
-(custom-set-faces
- '(org-default ((t (:family "Cantarell" :height 120 :weight regular))))
- '(org-level-1 ((t (:inherit org-default :height 1.3))))
- '(org-level-2 ((t (:inherit org-default :height 1.2))))
- '(org-level-3 ((t (:inherit org-default :height 1.1))))
- '(org-level-4 ((t (:inherit org-default :height 1.0))))
- '(org-level-5 ((t (:inherit org-default :height 1.0))))
- '(org-level-6 ((t (:inherit org-default :height 1.0))))
- '(org-level-7 ((t (:inherit org-default :height 1.0))))
- '(org-level-8 ((t (:inherit org-default :height 1.0))))
-)
-
-;; 设置 org-mode 字体的函数
-(defun my-org-mode-setup ()
-  (set-face-attribute 'default nil :family "Cantarell" :height 120)
-  (set-face-attribute 'org-default nil :family "Cantarell" :height 120)
-  (set-face-attribute 'org-level-1 nil :inherit 'org-default :height 1.3)
-  (set-face-attribute 'org-level-2 nil :inherit 'org-default :height 1.2)
-  (set-face-attribute 'org-level-3 nil :inherit 'org-default :height 1.1)
-  (set-face-attribute 'org-level-4 nil :inherit 'org-default :height 1.0)
-  (set-face-attribute 'org-level-5 nil :inherit 'org-default :height 1.0)
-  (set-face-attribute 'org-level-6 nil :inherit 'org-default :height 1.0)
-  (set-face-attribute 'org-level-7 nil :inherit 'org-default :height 1.0)
-  (set-face-attribute 'org-level-8 nil :inherit 'org-default :height 1.0))
-
-(add-hook 'org-mode-hook 'my-org-mode-setup)
+;;(custom-set-faces
+;;'(org-default ((t (:family "Fira Code" :height 120 :weight regular))))
+;; '(org-level-1 ((t (:inherit org-default :height 1.0))))
+;; '(org-level-2 ((t (:inherit org-default :height 1.0))))
+;; '(org-level-3 ((t (:inherit org-default :height 1.0))))
+;; '(org-level-4 ((t (:inherit org-default :height 1.05))))
+;; '(org-level-5 ((t (:inherit org-default :height 1.0))))
+;; '(org-level-6 ((t (:inherit org-default :height 1.0))))
+;; '(org-level-7 ((t (:inherit org-default :height 1.0))))
+;; '(org-level-8 ((t (:inherit org-default :height 1.0))))
+;;)
+(add-hook 'org-mode-hook #'buffer-face-mode)
 
 (require 'org-tempo)
 
