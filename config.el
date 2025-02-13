@@ -267,7 +267,7 @@
   :height default-font-size
   :weight 'light)
 (set-face-attribute 'variable-pitch nil
-  :family "Fira Code"
+  :family "Cantarell"
   :height default-font-size
   :weight 'light)
 (set-face-attribute 'fixed-pitch nil
@@ -795,53 +795,35 @@
 
 (eval-after-load 'org-indent '(diminish 'org-indent-mode))
 
-;; 设置 Org-mode 标题的字体
-;; 设置 Org-mode 全局字体为 Cantarell
-;; 在加载 Org 模式后设置（避免被覆盖）
+(defun efs/org-font-setup ()
+  ;; Set faces for heading levels
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+
+  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+
 (with-eval-after-load 'org
-(custom-set-faces
-'(org-default ((t (:family "Fira Code" :height 120 :weight regular))))
- '(org-level-1 ((t (:inherit org-default :height 1.5 :weight normal))))
- '(org-level-2 ((t (:inherit org-default :height 1.4 :weight normal))))
- '(org-level-3 ((t (:inherit org-default :height 1.3 :weight normal))))
- '(org-level-4 ((t (:inherit org-default :height 1.2 :weight normal))))
- '(org-level-5 ((t (:inherit org-default :height 1.1 :weight normal))))
- '(org-level-6 ((t (:inherit org-default :height 1.1 :weight normal))))
- '(org-level-7 ((t (:inherit org-default :height 1.1 :weight normal))))
- '(org-level-8 ((t (:inherit org-default :height 1.1 :weight normal))))
-)
+  (efs/org-font-setup))
+
 (dolist (character '(?\x25C9 ?\x25CB ?\x2738 ?\x273F))
   (set-fontset-font nil character "Fira Code"))
-
-(add-hook 'org-mode-hook #'buffer-face-mode)
-;; 设置代码块的字体
-(set-face-attribute 'org-block nil
-  :family "Fira Code"
-  :height 110
-  :weight 'light
-  :background "#f5f5f5"
-  :foreground "#333333"
-  :extend t)
-
-;; 设置代码块开始和结束行的字体
-(set-face-attribute 'org-block-begin-line nil
-  :family "Fira Code"
-  :height 90
-  :weight 'light
-  :foreground "#888888"
-  :background "#eeeeee"
-  :extend t)
-
-(set-face-attribute 'org-block-end-line nil
-  :family "Fira Code"
-  :height 90
-  :weight 'light
-  :foreground "#888888"
-  :background "#eeeeee"
-  :extend t)
-
-)
-;;(add-hook 'org-mode-hook #'buffer-face-mode)
 
 (require 'org-tempo)
 
@@ -930,6 +912,13 @@
 (setq pop-up-windows nil)    ;; No popup windows
 ;; Maximized the emacs windows when it start
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
+;; Disable line numbers for some modes
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                treemacs-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 (use-package sudo-edit)
 
@@ -941,6 +930,12 @@
 (add-to-list 'default-frame-alist '(alpha-background . 80)) ; For all new frames henceforth
 
 (use-package transient)
+
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(setq default-buffer-file-coding-system 'utf-8)
 
 (use-package which-key
   :init
