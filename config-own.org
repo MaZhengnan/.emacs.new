@@ -222,10 +222,13 @@ This is an icon set that can be used with dashboard, dired, ibuffer and other Em
 #+begin_src emacs-lisp
 (use-package all-the-icons
   :ensure t
-  :if (display-graphic-p))
+  :config
+  (set-fontset-font t 'symbol "all-the-icons" nil 'prepend))
 
 (use-package all-the-icons-dired
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+
+(set-fontset-font t 'symbol "all-the-icons" nil 'prepend)
 #+end_src
 
 ** DASHBOARD
@@ -263,7 +266,6 @@ Emacs Dashboard is an extensible startup screen showing you recent files, bookma
   (setq dashboard-center-content t ;; set to 't' for centered content
         dashboard-vertically-center-content t)
   (dashboard-setup-startup-hook))
-  ;;(add-hook 'dashboard-mode-hook #'fixed-pitch)
 #+end_src
 
 ** DIMINISH
@@ -325,24 +327,37 @@ Defining the various fonts that Emacs will use.
 *** Setting the Font Face
 #+begin_src emacs-lisp
 (set-face-attribute 'default nil
-  :family "Fira Code"
-  :height default-font-size
-  :weight 'light)
+                    :family "Fira Code"
+                    :height default-font-size
+                    :weight 'regular)
 (set-face-attribute 'variable-pitch nil
-  :family "Fira Code"
-  :height default-font-size
-  :weight 'light)
+                    :family "Cantarell"
+                    :height default-font-size
+                    :weight 'regular)
 (set-face-attribute 'fixed-pitch nil
-  :family "Fira Code"
-  :height default-font-size
-  :weight 'light)
-;; Makes commented text and keywords italics.
-;; This is working in emacsclient but not emacs.
-;; Your font must have an italic face available.
+                    :family "Fira Code"
+                    :height default-font-size
+                    :weight 'light)
+;; for code comment
 (set-face-attribute 'font-lock-comment-face nil
-  :slant 'italic)
+                    :family "Cantarell"
+                    :weight 'light
+                    :slant 'normal)
+;; for keyword
 (set-face-attribute 'font-lock-keyword-face nil
-  :slant 'italic)
+                    :family "Cantarell"
+                    :weight 'bold)
+(set-face-attribute 'widget-button nil
+                    :family "Fira Code"
+                    :weight 'normal)
+(set-face-attribute 'font-lock-doc-face nil
+                    :family "Cantarell"
+                    :weight 'light
+                    :slant 'normal)
+(set-face-attribute 'org-block nil
+                    :family "Fira Code"
+                    :weight 'normal
+                    :slant 'normal)
 
 ;; This sets the default font on all graphical frames created after restarting Emacs.
 ;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
@@ -513,7 +528,7 @@ Removes "Ind" from showing in the modeline.
     (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+  ;;(set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
   (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
   (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
   (set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
