@@ -65,6 +65,10 @@
 
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 
+(use-package page-break-lines
+  :after dashboard
+  :ensure t)
+
 (use-package dashboard
   :ensure t 
   :init
@@ -93,10 +97,13 @@
   (dashboard-modify-heading-icons '((recents . "file-text")
 				      (bookmarks . "book")))
   :config
-  (page-break-lines-mode -1)
-  (dashboard-setup-startup-hook))
+  (require 'page-break-lines)
+  (dashboard-setup-startup-hook)
+   (add-hook 'dashboard-mode-hook
+            (lambda ()
+              (buffer-face-mode 'fixed-pitch))))
 
-(add-hook 'dashboard-mode-hook #'buffer-face-mode)
+;;(add-hook 'dashboard-mode-hook #'buffer-face-mode)
 
 (use-package diminish)
 
@@ -797,14 +804,14 @@
 
 (defun efs/org-font-setup ()
   ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
+  (dolist (face '((org-level-1 . 1.3)
+                  (org-level-2 . 1.2)
+                  (org-level-3 . 1.1)
+                  (org-level-4 . 1.05)
+                  (org-level-5 . 1.0)
+                  (org-level-6 . 1.0)
+                  (org-level-7 . 1.0)
+                  (org-level-8 . 1.0)))
     (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
@@ -828,7 +835,7 @@
 (require 'org-tempo)
 
 (defun org-mode-visual-fill ()
-  (setq visual-fill-column-width 130
+  (setq visual-fill-column-width 100
         visual-fill-column-center-text t)
   (visual-fill-column-mode 1))
 

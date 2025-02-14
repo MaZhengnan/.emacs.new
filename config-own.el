@@ -1,93 +1,22 @@
-#+TITLE: MZN's GNU Emacs Configuration File
-#+AUTHOR: Ma Zhengnan (MZN)
-#+DESCRIPTION: MZN's personal Emacs config.
-#+STARTUP: showeverything
-#+OPTIONS: toc:2
-
-* TABLE OF CONTENTS :toc:
-- [[#basic-configuration][BASIC CONFIGURATION]]
-  - [[#adding-and-sourcing-the-scripts][Adding and sourcing the scripts]]
-  - [[#identify-the-operating-system][Identify the operating system]]
-  - [[#setting-up-font-size][Setting up font size]]
-  - [[#setting-up-paths-in-unix][Setting up paths in Unix]]
-  - [[#setting-up-paths-in-windows][Setting up paths in Windows]]
-  - [[#setting-up-paths][Setting up paths]]
-  - [[#transient][Transient]]
-  - [[#utf-8][UTF-8]]
-- [[#evil][EVIL]]
-- [[#general-keybindings][GENERAL KEYBINDINGS]]
-- [[#git-programs][GIT PROGRAMS]]
-  - [[#git-time-machine][Git Time Machine]]
-  - [[#magit][Magit]]
-- [[#graphics][GRAPHICS]]
-  - [[#all-the-icons][ALL THE ICONS]]
-  - [[#dashboard][DASHBOARD]]
-  - [[#diminish][DIMINISH]]
-  - [[#dired][DIRED]]
-  - [[#drag-stuff][DRAG-STUFF]]
-  - [[#ediff][EDIFF]]
-  - [[#fonts][FONTS]]
-  - [[#modeline][MODELINE]]
-  - [[#theme][THEME]]
-  - [[#transparency][TRANSPARENCY]]
-- [[#highlight-todo][HIGHLIGHT TODO]]
-- [[#ivy-counsel][IVY (COUNSEL)]]
-- [[#language-support][LANGUAGE SUPPORT]]
-- [[#org-mode][ORG-MODE]]
-  - [[#agenda][Agenda]]
-  - [[#bullets][Bullets]]
-  - [[#diminish-org-indent-mode][Diminish Org Indent Mode]]
-  - [[#org-ui][Org UI]]
-  - [[#org-tempo][Org-Tempo]]
-  - [[#center-org-buffers][Center Org Buffers]]
-  - [[#preserve-indentation-on-org-babel-tangle][Preserve Indentation On Org-Babel-Tangle]]
-  - [[#toc-org][Toc-Org]]
-- [[#projectile][PROJECTILE]]
-- [[#sane-defaults][SANE DEFAULTS]]
-- [[#tldr][TLDR]]
-- [[#treemacs][TREEMACS]]
-- [[#which-key][WHICH-KEY]]
-
-* BASIC CONFIGURATION
-This part is the basic configuration.
-
-** Adding and sourcing the scripts
-#+begin_src emacs-lisp
 (add-to-list 'load-path "~/.emacs.d/scripts")
 (require 'elpaca-setup)  ;; The Elpaca Package Manager
 (require 'app-launchers) ;; Use emacs as a run launcher like dmenu (experimental)
 (require 'buffer-move)   ;; Buffer-move for better window management
 (require 'eshell-prompt) ;; A fancy prompt for eshell
-#+end_src
 
-** Identify the operating system 
-#+begin_src emacs-lisp
 (setq mzn/is-windows (eq system-type 'windows-nt))
-#+end_src
 
-** Setting up font size
-#+begin_src emacs-lisp
- 
 (defvar mzn/unix-font-size 200)
 (defvar mzn/windows-font-size 120) ;; Ensure this variable is defined
 (defvar default-font-size (if mzn/is-windows
                               mzn/windows-font-size
                             mzn/unix-font-size))
-#+end_src
 
-** Setting up paths in Unix 
-I use the same paths in Macos and Linux.
-#+begin_src emacs-lisp
 (defvar mzn/unix-dotfiles-path "~/Documents/dotfiles")
 (defvar mzn/unix-notes-path "~/Documents/notes")
 (defvar mzn/unix-agenda-path "~/Documents/workflows")
 (defvar mzn/unix-code-path "~/Documents/code")
-#+end_src
 
-** Setting up paths in Windows
- When I am using windows-10 or windows-11, I will create a new systerm environment variable named =MZN_WORK=. And set all my code, notes, workflows and dotfiles in it. 
-
- #+begin_src emacs-lisp
 ;; Define path and font size in Windows
 (defvar mzn/windows-dotfiles-path nil)
 (defvar mzn/windows-notes-path nil)
@@ -102,10 +31,7 @@ I use the same paths in Macos and Linux.
     (setq mzn/windows-notes-path (concat (file-name-as-directory my-custom-path) "notes"))
     (setq mzn/windows-agenda-path (concat (file-name-as-directory my-custom-path) "workflows"))
     (setq mzn/windows-code-path (concat (file-name-as-directory my-custom-path) "code"))))
-#+end_src
 
-** Setting up paths
-#+begin_src emacs-lisp
 (defvar default-variable-font-size (if mzn/is-windows
                                        mzn/windows-font-size
                                      mzn/unix-font-size))
@@ -127,28 +53,14 @@ I use the same paths in Macos and Linux.
                           mzn/windows-code-path
                         mzn/unix-code-path))
 
-#+end_src
-
-** Transient
-If I want to use =Magit=, I need to install =transient= first. I don't know why, and I don't know the function of it.
-#+begin_src emacs-lisp
 (use-package transient)
-#+end_src
 
-** UTF-8
-I want to use utf-8 encoding type in everywhere.
-#+begin_src emacs-lisp
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (setq default-buffer-file-coding-system 'utf-8)
-#+end_src
 
-* EVIL
-[[https://github.com/emacs-evil/evil][Evil]] is an extensible vi/vim layer for Emacs.  Because...let's face it.  The Vim keybindings are just plain better.
-
-#+begin_src emacs-lisp
 ;; Expands to: (elpaca evil (use-package evil :demand t))
 (use-package evil
     :init      ;; tweak evil's configuration before loading it
@@ -185,19 +97,8 @@ I want to use utf-8 encoding type in everywhere.
   (setq evil-escape-delay 0.5) ;; delay time is 0.5s
   (evil-escape-mode 1))
 
-#+end_src
-
-* GENERAL KEYBINDINGS
-Because the configuration file is too long, I make it to a single file named =general-keybindings.el=. It is convenience to modified and update. 
-#+begin_src emacs-lisp
 (require 'general-keybindings)
-#+end_src
-* GIT PROGRAMS
-** Git Time Machine
-[[https://github.com/emacsmirror/git-timemachine][git-timemachine]] is a program that allows you to move backwards and forwards through a file's commits.  'SPC g t' will open the time machine on a file if it is in a git repo.  Then, while in normal mode, you can use 'CTRL-j' and 'CTRL-k' to move backwards and forwards through the commits.
 
-
-#+begin_src emacs-lisp
 (use-package git-timemachine
   :after git-timemachine
   :hook (evil-normalize-keymaps . git-timemachine-hook)
@@ -205,33 +106,15 @@ Because the configuration file is too long, I make it to a single file named =ge
     (evil-define-key 'normal git-timemachine-mode-map (kbd "C-j") 'git-timemachine-show-previous-revision)
     (evil-define-key 'normal git-timemachine-mode-map (kbd "C-k") 'git-timemachine-show-next-revision)
 )
-#+end_src
 
-** Magit
-[[https://magit.vc/manual/][Magit]] is a full-featured git client for Emacs.
-
-#+begin_src emacs-lisp
 (use-package magit)
 
-#+end_src
-
-* GRAPHICS
-** ALL THE ICONS
-This is an icon set that can be used with dashboard, dired, ibuffer and other Emacs programs.
-  
-#+begin_src emacs-lisp
 (use-package all-the-icons
   :ensure t
   :if (display-graphic-p))
 
 (use-package all-the-icons-dired
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
-#+end_src
-
-** DASHBOARD
-Emacs Dashboard is an extensible startup screen showing you recent files, bookmarks, agenda items and an Emacs banner.
-
-#+begin_src emacs-lisp
 
 (use-package dashboard
   :ensure t 
@@ -264,16 +147,9 @@ Emacs Dashboard is an extensible startup screen showing you recent files, bookma
         dashboard-vertically-center-content t)
   (dashboard-setup-startup-hook))
   ;;(add-hook 'dashboard-mode-hook #'fixed-pitch)
-#+end_src
 
-** DIMINISH
-This package implements hiding or abbreviation of the modeline displays (lighters) of minor-modes.  With this package installed, you can add ':diminish' to any use-package block to hide that particular mode in the modeline.
-
-#+begin_src emacs-lisp
 (use-package diminish)
-#+end_src
-** DIRED
-#+begin_src emacs-lisp
+
 (use-package dired-open
   :config
   (setq dired-open-extensions '(("gif" . "sxiv")
@@ -292,23 +168,11 @@ This package implements hiding or abbreviation of the modeline displays (lighter
     (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file)
 )
 
-#+end_src
-
-** DRAG-STUFF
-[[https://github.com/rejeep/drag-stuff.el][Drag Stuff]] is a minor mode for Emacs that makes it possible to drag stuff (words, region, lines) around in Emacs.  When 'drag-stuff-define-keys' is enabled, then the following keybindings are set: M-up, M-down, M-left, and M-right.
-
-#+begin_src emacs-lisp
 (use-package drag-stuff
   :init
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys))
 
-#+end_src
-
-** EDIFF
-'ediff' is a diff program that is built into Emacs.  By default, 'ediff' splits files vertically and places the 'help' frame in its own window.  I have changed this so the two files are split horizontally and the 'help' frame appears as a lower split within the existing window.  Also, I create my own 'dt-ediff-hook' where I add 'j/k' for moving to next/prev diffs.  By default, this is set to 'n/p'.
-
-#+begin_src emacs-lisp
 (setq ediff-split-window-function 'split-window-horizontally
       ediff-window-setup-function 'ediff-setup-windows-plain)
 
@@ -318,12 +182,7 @@ This package implements hiding or abbreviation of the modeline displays (lighter
   (define-key ediff-mode-map "k" 'ediff-previous-difference))
 
 (add-hook 'ediff-mode-hook 'dt-ediff-hook)
-#+end_src
-** FONTS
-Defining the various fonts that Emacs will use.
 
-*** Setting the Font Face
-#+begin_src emacs-lisp
 (set-face-attribute 'default nil
   :family "Fira Code"
   :height default-font-size
@@ -352,22 +211,11 @@ Defining the various fonts that Emacs will use.
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.12)
 
-#+end_src
-
-*** Zooming In/Out
-You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTRL plus the mouse wheel for zooming in/out.
-
-#+begin_src emacs-lisp
 (global-set-key (kbd "C-=") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
-#+end_src
 
-** MODELINE
-The modeline is the bottom status bar that appears in Emacs windows.  While you can create your own custom modeline, why go to the trouble when Doom Emacs already has a nice modeline package available.  For more information on what is available to configure in the Doom modeline, check out: [[https://github.com/seagle0128/doom-modeline][Doom Modeline]]
-
-#+begin_src emacs-lisp
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
@@ -377,28 +225,11 @@ The modeline is the bottom status bar that appears in Emacs windows.  While you 
         doom-modeline-persp-name t   ;; adds perspective name to modeline
         doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
 
-#+end_src
-
-** THEME
-The first line below designates the directory where will place all of our custom-made themes, which I have created only one (dtmacs).  You can create your own Emacs themes with the help of the [[https://emacsfodder.github.io/emacs-theme-editor/][Emacs Theme Editor]].  I am also installing =doom-themes= because it contains a huge collection of themes.  M-x load-theme will list all of the themes available.
-
-#+begin_src emacs-lisp
 (use-package doom-themes
   :init (load-theme 'doom-dracula t))
-#+end_src
 
-** TRANSPARENCY
-With Emacs version 29, true transparency has been added.  I have turned transparency off by setting the alpha to '100'.  If you want some slight transparency, try setting alpha to '90'.  Of course, if you set alpha to '0', the background of Emacs would completely transparent.
-
-#+begin_src emacs-lisp
 ;;(add-to-list 'default-frame-alist '(alpha-background . 80)) ; For all new frames henceforth
 
-#+end_src
-
-* HIGHLIGHT TODO
-Adding highlights to TODO and related words.
-
-#+begin_src emacs-lisp
 (use-package hl-todo
   :hook ((org-mode . hl-todo-mode)
          (prog-mode . hl-todo-mode))
@@ -412,94 +243,67 @@ Adding highlights to TODO and related words.
           ("NOTE"       success bold)
           ("DEPRECATED" font-lock-doc-face bold))))
 
-#+end_src
+(use-package counsel
+  :after ivy
+  :diminish
+  :config 
+    (counsel-mode)
+    (setq ivy-initial-inputs-alist nil)) ;; removes starting ^ regex in M-x
 
-* IVY (COUNSEL)
-+ Ivy, a generic completion mechanism for Emacs.
-+ Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
-+ Ivy-rich allows us to add descriptions alongside the commands in M-x.
+(use-package ivy
+  :bind
+  (("C-s" . swiper)
+  ("C-c C-r" . ivy-resume)
+  ("C-x B" . ivy-switch-buffer-other-window)
+  :map ivy-minibuffer-map
+  ("TAB" . ivy-alt-done)
+  ("C-l" . ivy-alt-done)
+  ("C-j" . ivy-next-line)
+  ("C-k" . ivy-previous-line)
+  :map ivy-switch-buffer-map
+  ("C-k" . ivy-previous-line)
+  ("C-l" . ivy-done)
+  ("C-d" . ivy-switch-buffer-kill)
+  :map ivy-reverse-i-search-map
+  ("C-k" . ivy-previous-line)
+  ("C-d" . ivy-reverse-i-search-kill))
+  :diminish
+  :custom
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d/%d) ")
+  (setq enable-recursive-minibuffers t)
+  :config
+  (ivy-mode))
 
-#+begin_src emacs-lisp
-  (use-package counsel
-    :after ivy
-    :diminish
-    :config 
-      (counsel-mode)
-      (setq ivy-initial-inputs-alist nil)) ;; removes starting ^ regex in M-x
+(use-package ivy-posframe
+  :after ivy
+  :config
+  (setq ivy-posframe-display-functions-alist
+	'((swiper          . ivy-posframe-display-at-frame-center)
+	  (complete-symbol . ivy-posframe-display-at-point)
+	  (t               . ivy-posframe-display-at-frame-center)))
+  (setq ivy-posframe-parameters
+	'((left-fringe . 10)
+	  (right-fringe . 10)))
+  (ivy-posframe-mode 1))
 
-  (use-package ivy
-    :bind
-    (("C-s" . swiper)
-    ("C-c C-r" . ivy-resume)
-    ("C-x B" . ivy-switch-buffer-other-window)
-    :map ivy-minibuffer-map
-    ("TAB" . ivy-alt-done)
-    ("C-l" . ivy-alt-done)
-    ("C-j" . ivy-next-line)
-    ("C-k" . ivy-previous-line)
-    :map ivy-switch-buffer-map
-    ("C-k" . ivy-previous-line)
-    ("C-l" . ivy-done)
-    ("C-d" . ivy-switch-buffer-kill)
-    :map ivy-reverse-i-search-map
-    ("C-k" . ivy-previous-line)
-    ("C-d" . ivy-reverse-i-search-kill))
-    :diminish
-    :custom
-    (setq ivy-use-virtual-buffers t)
-    (setq ivy-count-format "(%d/%d) ")
-    (setq enable-recursive-minibuffers t)
-    :config
-    (ivy-mode))
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :init (all-the-icons-ivy-rich-mode 1))
 
-  (use-package ivy-posframe
-    :after ivy
-    :config
-    (setq ivy-posframe-display-functions-alist
-	  '((swiper          . ivy-posframe-display-at-frame-center)
-	    (complete-symbol . ivy-posframe-display-at-point)
-	    (t               . ivy-posframe-display-at-frame-center)))
-    (setq ivy-posframe-parameters
-	  '((left-fringe . 10)
-	    (right-fringe . 10)))
-    (ivy-posframe-mode 1))
+(use-package ivy-rich
+  :after ivy
+  :ensure t
+  :init (ivy-rich-mode 1)) ;; this gets us descriptions in M-x.
 
-  (use-package all-the-icons-ivy-rich
-    :ensure t
-    :init (all-the-icons-ivy-rich-mode 1))
-
-  (use-package ivy-rich
-    :after ivy
-    :ensure t
-    :init (ivy-rich-mode 1)) ;; this gets us descriptions in M-x.
-
-#+end_src
-
-* LANGUAGE SUPPORT
-* ORG-MODE
-** Agenda
-#+begin_src emacs-lisp
 (setq org-agenda-files (list (concat mzn/agenda-path "/agenda.org")))
-#+end_src
- 
-** Bullets
-=Org-bullets= gives us attractive bullets rather than asterisks.
 
-#+begin_src emacs-lisp
 (add-hook 'org-mode-hook 'org-indent-mode)
 (use-package org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-#+end_src
 
-** Diminish Org Indent Mode
-Removes "Ind" from showing in the modeline.
-
-#+begin_src emacs-lisp
 (eval-after-load 'org-indent '(diminish 'org-indent-mode))
-#+end_src
 
-** Org UI 
-#+begin_src emacs-lisp
 (defun mzn/org-font-setup ()
   ;; Set faces for heading levels
   (dolist (face '((org-level-1 . 1.3)
@@ -529,70 +333,27 @@ Removes "Ind" from showing in the modeline.
 
 (dolist (character '(?\x25C9 ?\x25CB ?\x2738 ?\x273F))
   (set-fontset-font nil character "Fira Code"))
-#+end_src
 
-** Org-Tempo
-Org-tempo is not a separate package but a module within org that can be enabled.  Org-tempo allows for '<s' followed by TAB to expand to a begin_src tag.  Other expansions available include:
-
-| Typing the below + TAB | Expands to ...                          |
-|------------------------+-----------------------------------------|
-| <a                     | '#+BEGIN_EXPORT ascii' … '#+END_EXPORT  |
-| <c                     | '#+BEGIN_CENTER' … '#+END_CENTER'       |
-| <C                     | '#+BEGIN_COMMENT' … '#+END_COMMENT'     |
-| <e                     | '#+BEGIN_EXAMPLE' … '#+END_EXAMPLE'     |
-| <E                     | '#+BEGIN_EXPORT' … '#+END_EXPORT'       |
-| <h                     | '#+BEGIN_EXPORT html' … '#+END_EXPORT'  |
-| <l                     | '#+BEGIN_EXPORT latex' … '#+END_EXPORT' |
-| <q                     | '#+BEGIN_QUOTE' … '#+END_QUOTE'         |
-| <s                     | '#+BEGIN_SRC' … '#+END_SRC'             |
-| <v                     | '#+BEGIN_VERSE' … '#+END_VERSE'         |
-
-#+begin_src emacs-lisp 
 (require 'org-tempo)
-#+end_src
 
-** Center Org Buffers
-We use [[https://github.com/joostkremers/visual-fill-column][visual-fill-column]] to center =org-mode= buffers for a more pleasing writing experience as it centers the contents of the buffer horizontally to seem more like you are editing a document.  This is really a matter of personal preference so you can remove the block below if you don't like the behavior.
+(defun org-mode-visual-fill ()
+  (setq visual-fill-column-width 110
+        visual-fill-column-center-text t)
+  (visual-fill-column-mode 1))
 
-#+begin_src emacs-lisp
+(use-package visual-fill-column
+  :hook (org-mode . org-mode-visual-fill))
 
-  (defun org-mode-visual-fill ()
-    (setq visual-fill-column-width 110
-          visual-fill-column-center-text t)
-    (visual-fill-column-mode 1))
-
-  (use-package visual-fill-column
-    :hook (org-mode . org-mode-visual-fill))
-
-#+end_src
-
-** Preserve Indentation On Org-Babel-Tangle
-#+begin_src emacs-lisp
 (setq org-src-preserve-indentation t)
-#+end_src
 
-** Toc-Org
-Allows us to create a Table of Contents in our Org docs.
-
-#+begin_src emacs-lisp
 (use-package toc-org
     :commands toc-org-enable
     :init (add-hook 'org-mode-hook 'toc-org-enable))
-#+end_src
 
-* PROJECTILE
-[[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.  It should be noted that many projectile commands do not work if you have set "fish" as the "shell-file-name" for Emacs.  I had initially set "fish" as the "shell-file-name" in the Vterm section of this config, but oddly enough I changed it to "bin/sh" and projectile now works as expected, and Vterm still uses "fish" because my default user "sh" on my Linux system is "fish".
-
-#+begin_src emacs-lisp
 (use-package projectile
   :config
   (projectile-mode 1))
-#+end_src
 
-* SANE DEFAULTS
-The following settings are simple modes that are enabled (or disabled) so that Emacs functions more like you would expect a proper editor/IDE to function.
-
-#+begin_src emacs-lisp
 (delete-selection-mode 1)    ;; You can select text and delete it by typing.
 (electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
 (electric-pair-mode 1)       ;; Turns on automatic parens pairing
@@ -626,19 +387,9 @@ The following settings are simple modes that are enabled (or disabled) so that E
 (add-to-list 'default-frame-alist `(alpha . ,mzn/frame-transparency))
 (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-#+end_src
 
-* TLDR
-=tldr= is a package for Emacs that is a client for accessing tldr pages. =tldr= pages are a community project that aims to simplify man pages with practical examples. This package allows users to view tldr pages directly in Emacs.
-
-With the =tldr= package, you can quickly find concise usage examples of commands without having to read lengthy man pages. After installation, you can use the =M-x tldr= command to find concise usage examples of commands.
-#+begin_src emacs-lisp
 (use-package tldr)
-#+end_src
 
-* TREEMACS
-* WHICH-KEY
-#+begin_src emacs-lisp
 (use-package which-key
   :init
     (which-key-mode 1)
@@ -657,5 +408,3 @@ With the =tldr= package, you can quickly find concise usage examples of commands
 	  which-key-max-description-length 25
 	  which-key-allow-imprecise-window-fit nil
 	  which-key-separator " → " ))
-#+end_src
-
