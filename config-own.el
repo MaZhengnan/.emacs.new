@@ -142,7 +142,7 @@
   (dashboard-modify-heading-icons '((recents . "file-text")
 				      (bookmarks . "book")))
   :config
-  (setq dashboard-page-separator "\n\f\n")
+  ;;(setq dashboard-page-separator "\n\f\n")
   (setq dashboard-center-content t ;; set to 't' for centered content
         dashboard-vertically-center-content t)
   (dashboard-setup-startup-hook))
@@ -183,33 +183,68 @@
 
 (add-hook 'ediff-mode-hook 'dt-ediff-hook)
 
-(set-face-attribute 'default nil
-  :family "Fira Code"
-  :height default-font-size
-  :weight 'light)
-(set-face-attribute 'variable-pitch nil
-  :family "Fira Code"
-  :height default-font-size
-  :weight 'light)
-(set-face-attribute 'fixed-pitch nil
-  :family "Fira Code"
-  :height default-font-size
-  :weight 'light)
-;; Makes commented text and keywords italics.
-;; This is working in emacsclient but not emacs.
-;; Your font must have an italic face available.
-(set-face-attribute 'font-lock-comment-face nil
-  :slant 'italic)
-(set-face-attribute 'font-lock-keyword-face nil
-  :slant 'italic)
+;; Font
+(defun font-installed-p (font-name)
+  "Check if font with FONT-NAME is available."
+  (find-font (font-spec :name font-name)))
+  (defconst sys/win32p
+    (eq system-type 'windows-nt)
+    "Are we running on a WinTel system?")
 
-;; This sets the default font on all graphical frames created after restarting Emacs.
-;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
-;; are not right unless I also add this method of setting the default font.
-;;(add-to-list 'default-frame-alist '(font . "Fira Code"))
+  (defconst sys/linuxp
+    (eq system-type 'gnu/linux)
+    "Are we running on a GNU/Linux system?")
 
-;; Uncomment the following line if line spacing needs adjusting.
-(setq-default line-spacing 0.12)
+  (defconst sys/macp
+    (eq system-type 'darwin)
+    "Are we running on a Mac system?")
+
+  (defun centaur-setup-fonts ()
+    "Setup fonts."
+    (when (display-graphic-p)
+      ;; Set default font
+      (cl-loop for font in '("Fira Code" "Cascadia Code" "Jetbrains Mono"
+			     "SF Mono" "Hack" "Source Code Pro" "Menlo"
+			     "Monaco" "DejaVu Sans Mono" "Consolas")
+	       when (font-installed-p font)
+	       return (set-face-attribute 'default nil
+					  :family font
+					  :height (cond (sys/macp 200)
+							(sys/win32p 120)
+							(t 100))))
+
+      ;; Set mode-line font
+      ;; (cl-loop for font in '("Menlo" "SF Pro Display" "Helvetica")
+      ;;          when (font-installed-p font)
+      ;;          return (progn
+      ;;                   (set-face-attribute 'mode-line nil :family font :height 120)
+      ;;                   (when (facep 'mode-line-active)
+      ;;                     (set-face-attribute 'mode-line-active nil :family font :height 120))
+      ;;                   (set-face-attribute 'mode-line-inactive nil :family font :height 120)))
+
+      ;; Specify font for all unicode characters
+      (cl-loop for font in '("Apple Symbols" "Segoe UI Symbol" "Symbola" "Symbol")
+	       when (font-installed-p font)
+	       return (set-fontset-font t 'symbol (font-spec :family font) nil 'prepend))
+
+      ;; Emoji
+      (cl-loop for font in '("Noto Color Emoji" "Apple Color Emoji" "Segoe UI Emoji")
+	       when (font-installed-p font)
+	       return (set-fontset-font t
+					(if (< emacs-major-version 28)'symbol 'emoji)
+					(font-spec :family font) nil 'prepend))
+
+      ;; Specify font for Chinese characters
+      (cl-loop for font in '("LXGW Neo Xihei" "WenQuanYi Micro Hei Mono" "LXGW WenKai Screen"
+			     "LXGW WenKai Mono" "PingFang SC" "Microsoft Yahei UI" "Simhei")
+	       when (font-installed-p font)
+	       return (progn
+			(setq face-font-rescale-alist `((,font . 1.3)))
+			(set-fontset-font t 'han (font-spec :family font))))))
+
+  (centaur-setup-fonts)
+  (add-hook 'window-setup-hook #'centaur-setup-fonts)
+  (add-hook 'server-after-make-frame-hook #'centaur-setup-fonts)
 
 (global-set-key (kbd "C-=") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
@@ -305,6 +340,10 @@
 (eval-after-load 'org-indent '(diminish 'org-indent-mode))
 
 (defun mzn/org-font-setup ()
+  ;; Replace list hyphen with dot
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
   ;; Set faces for heading levels
   (dolist (face '((org-level-1 . 1.3)
                   (org-level-2 . 1.2)
@@ -313,9 +352,9 @@
                   (org-level-5 . 1.0)
                   (org-level-6 . 1.0)
                   (org-level-7 . 1.0)
-                  (org-level-8 . 1.0)))
+                  (org-level-8 . 1.0)
+		    ))
     (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
-
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
   (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
@@ -329,8 +368,7 @@
   (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (with-eval-after-load 'org
-  (mzn/org-font-setup))
-
+(mzn/org-font-setup))
 (dolist (character '(?\x25C9 ?\x25CB ?\x2738 ?\x273F))
   (set-fontset-font nil character "Fira Code"))
 
